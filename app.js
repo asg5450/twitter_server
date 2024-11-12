@@ -1,6 +1,6 @@
 import express from "express";
-import tweetsRouter from "router/tweets.js";
-import authRouter from "router/auth.js";
+import tweetsRouter from "./router/tweets.js";
+import authRouter from "./router/auth.js";
 
 const app = express();
 
