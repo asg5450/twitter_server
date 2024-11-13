@@ -1,29 +1,65 @@
 import * as authRepository from "../data/auth.js";
+import * as bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const secretKey = "abcdefg1234%^&*";
+const bcryptSaltRounds = 10;
+const jwtExpiresInDays = "2d";
+
+async function createJwtToken(id) {
+  return jwt.sign(
+    // id: id,  그냥 id 쓰면 됨
+    { id },
+    secretKey,
+    { expiresIn: jwtExpiresInDays }
+  );
+}
 
 // 회원가입
-export async function signup(req, res) {
+export async function signup(req, res, next) {
   const { username, password, name, email } = req.body;
-  const users = await authRepository.createUser(
-    username,
-    password,
-    name,
-    email
-  );
-  if (users) {
-    res.status(201).json(users);
+  const found = await authRepository.findByUsername(username);
+  if (found) {
+    return res
+      .status(409)
+      .json({ message: `${username}는 이미 사용중인 계정입니다.` });
   }
+  const hashed = bcrypt.hashSync(password, bcryptSaltRounds);
+  const user = await authRepository.createUser(username, hashed, name, email);
+  const token = await createJwtToken(user.id);
+  res.status(201).json({ token, username });
 }
 
 // 로그인
 export async function login(req, res, next) {
   const { username, password } = req.body;
+  const user = await authRepository.findByUsername(username);
 
-  const user = await authRepository.login(username);
-  if (user) {
-    res.status(201).json(`${username} 로그인 완료`);
-  } else {
-    res
-      .status(404)
-      .json({ message: `${username}님이 아이디 또는 비밀번호를 확인하세요` });
+  if (!user) {
+    return res.status(402).json(`${username} 아이디를 찾을 수 없음`);
   }
+
+  const isInvalidPassword = await bcrypt.compare(password, user.password);
+  if (!isInvalidPassword) {
+    return res.status(401).json({ message: `아이디 또는 비밀번호 확인` });
+  }
+
+  const token = await createJwtToken(user.id);
+  res.status(200).header("Token", token).json({ token, username });
+}
+
+export async function verify(req, res, next) {
+  const token = req.header["Token"];
+  if (token) {
+    res.status(200).json(token);
+  }
+}
+
+export async function me(req, res, next) {
+  // req객체의 Header 프로퍼티도 'req.키'로 접근할 수 있다.
+  const user = await authRepository.findById(req.userId);
+
+  if (!user) return res.status(404).json({ message: "일치하는 사용자가 없음" });
+
+  res.status(200).json({ token: req.token, username: user.username });
 }

@@ -28,7 +28,8 @@ let users = [
 export async function createUser(username, password, name, email) {
   const user = {
     id: "4",
-    username: username,
+    username,
+    // username  과   username = username  이 똑같이 동작함 (javascript 문법)
     password: password,
     name: name,
     email: email,
@@ -39,7 +40,11 @@ export async function createUser(username, password, name, email) {
   return user;
 }
 
-export async function login(username) {
+export async function findByUsername(username) {
   const user = users.find((user) => user.username == username);
   return user;
+}
+
+export async function findById(id) {
+  return users.find((user) => user.id === id);
 }
