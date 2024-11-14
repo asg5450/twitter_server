@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>클라이언트</title>
+    <script
+      src="https://cdn.socket.io/4.8.0/socket.io.min.js"
+      integrity="sha384-OoIbkvzsFFQAG88r+IqMAjyOtYDPGO0cqK5HF5Uosdy/zUEGySeAzytENMDynREd"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      function addEmoji(emoji) {
+        const message = document.getElementById("message");
+        message.value += emoji;
+      }
+      const socket = io();
+
+      function setNickname() {
+        const nickname = document.getElementById("nickname").value;
+        // io객체.emit("이벤트명", "값")
+        socket.emit("setNickname", nickname);
+      }
+
+      // 수신 이벤트 처리
+      socket.on("setNickname", (message) => {
+        const chatBoxElement = document.getElementById("chatBox");
+        const newMessageElement = document.createElement("p");
+        newMessageElement.textContent = message;
+        chatBoxElement.appendChild(newMessageElement);
+      });
+    </script>
+  </head>
+  <body>
+    <h2>간단한 채팅</h2>
+    <form action="#">
+      <p>
+        닉네임: <input type="text" id="nickname" />
+        <button type="button" onclick="setNickname()">설정</button>
+      </p>
+      <p>
+        채널: <input type="text" id="channel" />
+        <button type="button">입장</button>
+      </p>
+      <p>
+        <!-- <ul id="channelList"></ul> -->
+      </p>
+      <p>
+        <input type="text" id="message" />
+        <button type="button">보내기</button>
+        <button type="button" onclick="addEmoji('😎')">😎</button>
+        <button type="button" onclick="addEmoji('🎃')">🎃</button>
+        <button type="button" onclick="addEmoji('😋')">😋</button>
+        <button type="button" onclick="addEmoji('😍')">😍</button>
+        <button type="button" onclick="addEmoji('😂')">😂</button>
+      </p>
+    </form>
+    <div id="chatBox"></div>
+  </body>
+</html>
