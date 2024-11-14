@@ -1,17 +1,14 @@
 import * as authRepository from "../data/auth.js";
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
-const secretKey = "abcdefg1234%^&*";
-const bcryptSaltRounds = 10;
-const jwtExpiresInDays = "2d";
+import { config } from "../config.js";
 
 async function createJwtToken(id) {
   return jwt.sign(
     // id: id,  그냥 id 쓰면 됨
     { id },
-    secretKey,
-    { expiresIn: jwtExpiresInDays }
+    config.jwt.secretKey,
+    { expiresIn: config.jwt.expiresInSec }
   );
 }
 
@@ -24,7 +21,7 @@ export async function signup(req, res, next) {
       .status(409)
       .json({ message: `${username}는 이미 사용중인 계정입니다.` });
   }
-  const hashed = bcrypt.hashSync(password, bcryptSaltRounds);
+  const hashed = bcrypt.hashSync(password, config.bcrypt.saltRounds);
   const user = await authRepository.createUser(username, hashed, name, email);
   const token = await createJwtToken(user.id);
   res.status(201).json({ token, username });
