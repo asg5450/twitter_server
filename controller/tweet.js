@@ -10,7 +10,7 @@ export async function getTweets(req, res, next) {
   res.status(200).json(data);
 }
 
-// 글번호에 대한 트윗 가져오기
+// 하나의 트윗을 가져오는 함수
 export async function getTweet(req, res, next) {
   const id = req.params.id;
   const tweet = await tweetRepository.getById(id);
@@ -21,38 +21,40 @@ export async function getTweet(req, res, next) {
   }
 }
 
-// 트윗을 생성하기
+// 트윗을 생성하는 함수
 export async function createTweet(req, res, next) {
-  const { username, name, text } = req.body;
-  const tweet = await tweetRepository.create(username, name, text);
-  res.status(200).json(tweet);
+  const { text } = req.body;
+  const tweet = await tweetRepository.create(text, req.userId);
+  res.status(201).json(tweet);
   getSocketIo().emit("tweets", tweet);
 }
 
-// 트윗을 변경하기
-export async function updateTweet(req, res) {
+// 트윗을 변경하는 함수
+export async function updateTweet(req, res, next) {
   const id = req.params.id;
   const text = req.body.text;
   const tweet = await tweetRepository.getById(id);
-
-  if (!tweet)
-    return res.status(404).json({ message: `${id}의 트윗이 없습니다.` });
-
-  if (tweet.userId !== req.userId) return res.sendStatus(403);
+  if (!tweet) {
+    return res.status(404).json({ message: `${id}의 트윗이 없습니다` });
+  }
+  if (tweet.userid !== req.userid) {
+    return res.sendStatus(403);
+  }
 
   const updated = await tweetRepository.update(id, text);
   res.status(200).json(updated);
 }
 
 // 트윗을 삭제하는 함수
-export async function deleteTweet(req, res) {
+export async function deleteTweet(req, res, next) {
   const id = req.params.id;
   const tweet = await tweetRepository.getById(id);
-  if (!tweet)
-    return res.status(404).json({ message: `${id}의 트윗이 없습니다.` });
-
-  if (tweet.userId !== req.userId) return res.sendStatus(403);
-
+  if (!tweet) {
+    return res.status(404).json({ message: `${id}의 트윗이 없습니다` });
+  }
+  if (tweet.userid !== req.userid) {
+    return res.sendStatus(403);
+  }
   await tweetRepository.remove(id);
   res.sendStatus(204);
 }

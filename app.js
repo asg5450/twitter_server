@@ -3,8 +3,16 @@ import tweetsRouter from "./router/tweets.js";
 import authRouter from "./router/auth.js";
 import { config } from "./config.js";
 import { initSocket } from "./connection/socket.js";
+import cors from "cors";
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
@@ -15,5 +23,5 @@ app.use((req, res, next) => {
   res.sendStatus(404);
 });
 
-// React 등 모듈의 기본 port가 3000이기에 8080으로 설정
-app.listen(config.host.port);
+const server = app.listen(config.host.port);
+initSocket(server);

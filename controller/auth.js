@@ -14,7 +14,7 @@ async function createJwtToken(id) {
 
 // 회원가입
 export async function signup(req, res, next) {
-  const { username, password, name, email } = req.body;
+  const { username, password, name, email, url } = req.body;
   const found = await authRepository.findByUsername(username);
   if (found) {
     return res
@@ -22,7 +22,13 @@ export async function signup(req, res, next) {
       .json({ message: `${username}는 이미 사용중인 계정입니다.` });
   }
   const hashed = bcrypt.hashSync(password, config.bcrypt.saltRounds);
-  const user = await authRepository.createUser(username, hashed, name, email);
+  const user = await authRepository.createUser({
+    username,
+    password: hashed,
+    name,
+    email,
+    url,
+  });
   const token = await createJwtToken(user.id);
   res.status(201).json({ token, username });
 }
