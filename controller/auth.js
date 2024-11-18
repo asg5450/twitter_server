@@ -2,6 +2,7 @@ import * as authRepository from "../data/auth.js";
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { config } from "../config.js";
+import path from "path";
 
 async function createJwtToken(id) {
   return jwt.sign(
@@ -22,20 +23,28 @@ export async function signup(req, res, next) {
       .json({ message: `${username}는 이미 사용중인 계정입니다.` });
   }
   const hashed = bcrypt.hashSync(password, config.bcrypt.saltRounds);
-  const user = await authRepository.createUser({
+  const userId = await authRepository.createUser({
     username,
     password: hashed,
     name,
     email,
     url,
   });
-  const token = await createJwtToken(user.id);
+  console.log(`userId : ${userId}`);
+  const token = await createJwtToken(userId);
   res.status(201).json({ token, username });
+}
+
+export async function signUpPage(req, res, next) {
+  res.sendFile(
+    path.join(process.cwd(), "static", "account-sign-up-image.html")
+  );
 }
 
 // 로그인
 export async function login(req, res, next) {
   const { username, password } = req.body;
+  console.log(`username : ${username}`);
   const user = await authRepository.findByUsername(username);
 
   if (!user) {
@@ -48,7 +57,12 @@ export async function login(req, res, next) {
   }
 
   const token = await createJwtToken(user.id);
-  res.status(200).header("Token", token).json({ token, username });
+  console.log(`token : ${token}`);
+  res.status(200).header("authToken", token).json({ token });
+}
+
+export async function signInPage(req, res, next) {
+  res.sendFile(path.join(process.cwd(), "static", "account-sign-in.html"));
 }
 
 export async function verify(req, res, next) {

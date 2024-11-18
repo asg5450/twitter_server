@@ -4,6 +4,7 @@ import authRouter from "./router/auth.js";
 import { config } from "./config.js";
 import { initSocket } from "./connection/socket.js";
 import cors from "cors";
+import path from "path";
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use(
 );
 
 app.use(express.json());
+app.use(express.static(path.join(process.cwd(), "static")));
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/tweets", tweetsRouter);
 app.use("/auth", authRouter);

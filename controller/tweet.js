@@ -1,5 +1,10 @@
 import * as tweetRepository from "../data/tweet.js";
 import { getSocketIo } from "../connection/socket.js";
+import path from "path";
+
+export async function getTweetPage(req, res, next) {
+  res.sendFile(path.join(process.cwd(), "static", "tweet.html"));
+}
 
 // 모든 트윗을 가져오는 함수
 export async function getTweets(req, res, next) {
