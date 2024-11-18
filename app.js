@@ -5,6 +5,7 @@ import { config } from "./config.js";
 import { initSocket } from "./connection/socket.js";
 import cors from "cors";
 import path from "path";
+import { sequelize } from "./db/database.js";
 
 const app = express();
 
@@ -26,5 +27,7 @@ app.use((req, res, next) => {
   res.sendStatus(404);
 });
 
-const server = app.listen(config.host.port);
-initSocket(server);
+sequelize.sync().then(() => {
+  const server = app.listen(config.host.port);
+  initSocket(server);
+});
