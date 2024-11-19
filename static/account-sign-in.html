@@ -56,14 +56,20 @@
           }
 
           const data = await response.json();
-          console.log(data);
+          console.log("loginGetToken response : ", data);
 
+          // jwt token
           const token = data.token;
-
           localStorage.setItem("authToken", token);
+
+          // login username
+          const loginUsername = data.username;
+          localStorage.setItem("loginUsername", loginUsername);
+
+          // tweet page 이동
           location.href = "/tweets/page";
         } catch (error) {
-          console.log("로그인 실패", error);
+          alert("로그인 실패", error);
         }
       }
     </script>
