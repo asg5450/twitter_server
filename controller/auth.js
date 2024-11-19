@@ -30,7 +30,6 @@ export async function signup(req, res, next) {
     email,
     url,
   });
-  console.log(`userId : ${userId}`);
   const token = await createJwtToken(userId);
   res.status(201).json({ token, username });
 }
