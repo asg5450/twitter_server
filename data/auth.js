@@ -1,27 +1,28 @@
-import MongoDb from "mongodb";
-import { getUsers } from "../db/database.js";
+import mongoose from "mongoose";
+import { useVirtualId } from "../db/database.js";
 
-const ObjectID = MongoDb.ObjectId;
+const userSchema = new mongoose.Schema(
+  {
+    username: { type: String, require: true },
+    name: { type: String, require: true },
+    email: { type: String, require: true },
+    password: { type: String, require: true },
+    url: String,
+  },
+  { versionKey: false }
+);
+
+useVirtualId(userSchema);
+const User = mongoose.model("User", userSchema); // 단수형으로 쓰고 s가 자동으로 붙는다?
 
 export async function findByUsername(username) {
-  return getUsers().find({ username }).next().then(mapOptionalUser);
+  return User.findOne({ username });
 }
 
 export async function findById(id) {
-  return getUsers()
-    .find({ _id: new ObjectID(id) })
-    .next()
-    .then(mapOptionalUser);
+  return User.findById(id);
 }
 
 export async function createUser(user) {
-  return getUsers()
-    .insertOne(user)
-    .then((result) => {
-      return result.insertedId.toString();
-    });
-}
-
-function mapOptionalUser(user) {
-  return user ? { ...user, id: user._id.toString() } : user;
+  return new User(user).save().then((data) => data.id);
 }
