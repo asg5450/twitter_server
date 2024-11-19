@@ -1,23 +1,27 @@
-import { db } from "../db/database.js";
+import MongoDb from "mongodb";
+import { getUsers } from "../db/database.js";
+
+const ObjectID = MongoDb.ObjectId;
 
 export async function findByUsername(username) {
-  return db
-    .execute("select * from users where username=?", [username])
-    .then((result) => result[0][0]);
+  return getUsers().find({ username }).next().then(mapOptionalUser);
 }
 
 export async function findById(id) {
-  return db
-    .execute("select * from users where id=?", [id])
-    .then((result) => result[0][0]);
+  return getUsers()
+    .find({ _id: new ObjectID(id) })
+    .next()
+    .then(mapOptionalUser);
 }
 
 export async function createUser(user) {
-  const { username, password, name, email, url } = user;
-  return db
-    .execute(
-      "insert into users (username, password, name, email, url) values (?,?,?,?,?)",
-      [username, password, name, email, url]
-    )
-    .then((result) => result[0].insertId);
+  return getUsers()
+    .insertOne(user)
+    .then((result) => {
+      return result.insertedId.toString();
+    });
+}
+
+function mapOptionalUser(user) {
+  return user ? { ...user, id: user._id.toString() } : user;
 }

@@ -11,6 +11,8 @@ const validatorTweet = [
   validate,
 ];
 
+router.get("/page", tweetController.getTweetPage);
+
 // data
 // 해당 아이디에 대한 트윗 가져오기
 // GET
